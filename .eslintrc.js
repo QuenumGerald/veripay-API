@@ -40,6 +40,13 @@ module.exports = {
         'node/no-unsupported-features/node-builtins': 'off',
       },
     },
+    {
+      files: ['scripts/**/*.js'],
+      rules: {
+        'no-console': 'off', // Allow console in test scripts
+        'no-process-exit': 'off', // Allow process.exit in test scripts
+      },
+    },
   ],
   plugins: ['@typescript-eslint', 'import', 'prettier'],
   rules: {
@@ -48,6 +55,7 @@ module.exports = {
     'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'node/no-unsupported-features/es-syntax': ['error', { ignores: ['modules'] }],
     'node/no-missing-import': 'off', // Handled by TypeScript
+    'node/no-unpublished-require': 'off', // Allow dev dependencies
     'import/order': [
       'error',
       {

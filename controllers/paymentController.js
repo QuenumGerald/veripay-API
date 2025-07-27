@@ -9,7 +9,7 @@ const VARISENSE_CONFIG = {
   features: ['payments', 'token-transfers'],
 };
 
-// Check if we're in test environment
+// Check if we're in test environment (unit tests with mocks)
 const isTestEnv = process.env.NODE_ENV === 'test';
 
 /**
@@ -40,22 +40,32 @@ async function buildTransaction({ chain, to, amount, tokenAddress }) {
   }
 
   // Real implementation would go here
-  const provider = new ethers.providers.JsonRpcProvider(chainConfig.rpc);
+  const provider = new ethers.JsonRpcProvider(chainConfig.rpc);
   const feeData = await provider.getFeeData();
-  const nonce = await provider.getTransactionCount(process.env.WALLET_ADDRESS, 'pending');
+  // Pour les tests, nous utiliserons l'adresse du destinataire comme expéditeur
+  const fromAddress = process.env.WALLET_ADDRESS || to;
+  const nonce = await provider.getTransactionCount(fromAddress, 'pending');
+
+  const network = await provider.getNetwork();
 
   return {
-    chainId: (await provider.getNetwork()).chainId,
+    chainId: Number(network.chainId),
     to: to.toLowerCase(),
-    value: tokenAddress ? '0x0' : ethers.utils.parseEther(amount.toString()).toHexString(),
+    value: tokenAddress ? '0x0' : ethers.parseEther(amount.toString()).toString(),
     data: tokenAddress
-      ? new ethers.utils.Interface([
-          'function transfer(address to, uint256 value)',
-        ]).encodeFunctionData('transfer', [to, ethers.utils.parseUnits(amount.toString(), 18)])
+      ? new ethers.Interface(['function transfer(address to, uint256 value)']).encodeFunctionData(
+          'transfer',
+          [to, ethers.parseUnits(amount.toString(), 18)]
+        )
       : '0x',
     gasLimit: '0x5208', // Default 21000 gas
-    gasPrice: feeData.gasPrice?.toHexString() || '0x0',
-    nonce: `0x${nonce.toString(16)}`,
+    gasPrice: feeData.gasPrice ? feeData.gasPrice.toString() : '0x0',
+    maxFeePerGas: feeData.maxFeePerGas ? feeData.maxFeePerGas.toString() : undefined,
+    maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+      ? feeData.maxPriorityFeePerGas.toString()
+      : undefined,
+    nonce: nonce,
+    type: 2, // EIP-1559
   };
 }
 
@@ -150,8 +160,8 @@ async function broadcastSignedTransaction(chain, signedTx) {
       throw new Error(`Unsupported chain: ${chain}`);
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(chainConfig.rpc);
-    const txResponse = await provider.sendTransaction(signedTx);
+    const provider = new ethers.JsonRpcProvider(chainConfig.rpc);
+    const txResponse = await provider.broadcastTransaction(signedTx);
     const receipt = await txResponse.wait();
 
     return {

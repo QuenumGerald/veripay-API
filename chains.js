@@ -108,3 +108,15 @@ module.exports = {
   },
   // Ajoutez d'autres chaînes selon les besoins
 };
+
+/**
+ * Récupère la configuration d'une chaîne par son nom
+ * @param {string} chainName - Nom de la chaîne
+ * @returns {Object|null} Configuration de la chaîne ou null si non trouvée
+ */
+function getChainConfig(chainName) {
+  return module.exports[chainName] || null;
+}
+
+// Exporter la fonction
+module.exports.getChainConfig = getChainConfig;

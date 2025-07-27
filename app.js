@@ -23,6 +23,16 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json()); // Pour parser le JSON des requêtes
 app.use(bodyParser.urlencoded({ extended: true })); // Pour parser les données de formulaire
 
+// Route de santé pour les tests
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0',
+  });
+});
+
 // Route pour Varisense - Récupérer les détails d'une transaction
 app.post('/api/v1/transactions/prepare', validateBuildPayment, async (req, res) => {
   try {
