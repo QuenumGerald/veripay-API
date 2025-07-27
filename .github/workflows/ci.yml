@@ -1,0 +1,78 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npx eslint . --ext .js
+
+      - name: Check Prettier Formatting
+        run: npx prettier --check .
+
+  test:
+    name: Run Tests
+    needs: lint
+    runs-on: ubuntu-latest
+
+    # Uncomment and add services when needed
+    # services:
+    #   redis:
+    #     image: redis
+    #     ports:
+    #       - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+        env:
+          NODE_ENV: test
+          # Add any test environment variables here
+          # DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_db
+
+      - name: Upload Coverage Report
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # Add deployment job here if needed
+  # deploy:
+  #   needs: [lint, test]
+  #   if: github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     # Add deployment steps here
