@@ -1,6 +1,8 @@
 # VeriPay API
 
-A Node.js/Express microservice for building and broadcasting blockchain transactions, designed for seamless integration with Varisense and WalletConnect.
+**A secure, production-ready Node.js/Express microservice for preparing, signing, and broadcasting Ethereum-compatible blockchain transactions.**
+
+Supports Sepolia testnet, Ethereum Mainnet, Polygon, BSC, Avalanche, and more. Designed for real payment flows, robust error handling, and easy integration.
 
 ## Table of Contents
 
@@ -314,5 +316,9 @@ npm run test:coverage
 5. Open a Pull Request
 
 ## License
+
+This project is **proprietary**. All rights reserved.
+
+Unauthorized copying, distribution, or use of any part of this codebase is strictly prohibited without explicit written permission from the author.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
